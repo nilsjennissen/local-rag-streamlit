@@ -21,11 +21,9 @@ from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain.text_splitter import CharacterTextSplitter
-from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from langchain.chains import LLMChain
 from langchain.chains import ConversationalRetrievalChain
-from langchain.embeddings import OllamaEmbeddings
 
 # Mistral Imports
 from langchain.llms import Ollama
