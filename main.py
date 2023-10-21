@@ -248,59 +248,52 @@ if user_input:
     else:
         st.session_state['messages'].append({"role": "user", "content": transcript})
 
-    # ------------------- FETCHING ANSWER ----------------- #
-    with st.spinner("Fetching answer ..."):
+        # ------------------- TRANSCRIPT ANSWER ----------------- #
+        with st.spinner("Fetching answer ..."):
 
-        # ------------------- NORMAL LLM CHAIN ----------------- #
-        if application_type == "Mistral LLM":
-            st.sidebar.info("To insert or retrieve content from your documents and the knowledge base, please choose "
-                            "the RAG or Knowledge Base application type")
-            chain = LLMChain(llm=llm_open, prompt=build_prompt("template_2"))
-            result = chain.run(st.session_state.transcript)
+            # ------------------- RAG CHAIN ----------------- #
+            if text is not None:
+                text_splitter = CharacterTextSplitter(chunk_size=200, chunk_overlap=50)
+                chunks = text_splitter.split_text(text)
 
-        # ------------------- RAG CHAIN ----------------- #
-        elif application_type == "Mistral RAG":
-            text_splitter = CharacterTextSplitter(chunk_size=200, chunk_overlap=50)
-            chunks = text_splitter.split_text(text)
+                knowledge_base = Chroma.from_texts(chunks, embeddings_open, persist_directory="./chroma_db")
+                docs = knowledge_base.similarity_search(st.session_state.transcript)
 
-            knowledge_base = Chroma.from_texts(chunks, embeddings_open, persist_directory=vector_db_path_selector,
-                                               collection_name=collection_selector)
-            docs = knowledge_base.similarity_search(st.session_state.transcript)
+                st.write(f"Found {len(docs)} chunks.")
 
-            st.write(f"Found {len(docs)} chunks.")
+                llm = Ollama(model="mistral", temperature=0,
+                             callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
 
-            llm = Ollama(model="mistral", temperature=0,
-                         callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
+                qa_chain = RetrievalQA.from_chain_type(llm_open, chain_type="stuff",
+                                                       retriever=knowledge_base.as_retriever(),
+                                                       chain_type_kwargs={"prompt": build_prompt("template_1")})
+                answer = qa_chain({"query": st.session_state.transcript})
+                result = answer["result"]
 
-            qa_chain = RetrievalQA.from_chain_type(llm_open, chain_type="stuff",
-                                                   retriever=knowledge_base.as_retriever(),
-                                                   chain_type_kwargs={"prompt": build_prompt("template_1")},
-                                                   verbose=True)
-            answer = qa_chain({"query": st.session_state.transcript})
-            result = answer["result"]
+                # ------------------- KNOWLEDGE BASE ----------------- #
+            elif vector_db_path_selector != "":
 
+                knowledge_base = Chroma(persist_directory="./chroma_db", embedding_function=embeddings_open)
+                docs = knowledge_base.similarity_search(st.session_state.transcript)
 
-            # ------------------- RAG VECTOR DB ----------------- #
-        elif application_type == "Mistral Knowledge Base":
+                st.sidebar.info(f"Found {len(docs)} chunks.")
 
-            knowledge_base = Chroma(persist_directory=vector_db_path_selector, embedding_function=embeddings_open)
-            docs = knowledge_base.similarity_search(st.session_state.transcript)
+                llm = Ollama(model="mistral", temperature=0,
+                             callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]))
 
-            qa_chain = RetrievalQA.from_chain_type(llm_open, chain_type="stuff",
-                                                   retriever=knowledge_base.as_retriever(search_kwargs={"k": 2}),
-                                                   chain_type_kwargs={"prompt": build_prompt("template_1")})
-            answer = qa_chain({"query": st.session_state.transcript})
-            result = answer["result"]
+                qa_chain = RetrievalQA.from_chain_type(llm_open, chain_type="stuff",
+                                                       retriever=knowledge_base.as_retriever(search_kwargs={"k": 2}),
+                                                       chain_type_kwargs={"prompt": build_prompt("template_1")})
+                answer = qa_chain({"query": st.session_state.transcript})
+                result = answer["result"]
 
-            st.sidebar.info(f"Found {len(docs)} chunks.")
+            answer = result
 
-        answer = result
+            st.session_state.past.append(transcript)
+            st.session_state.generated.append(answer)
+            st.session_state['messages'].append({"role": "assistant", "content": answer})
 
-        st.session_state.past.append(transcript)
-        st.session_state.generated.append(answer)
-        st.session_state['messages'].append({"role": "assistant", "content": answer})
-
-if 'messages' in st.session_state:
-    for i in range(len(st.session_state['generated']) - 1, -1, -1):
-        message(st.session_state["generated"][i], key=str(i))
-        message(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
+    if 'messages' in st.session_state:
+        for i in range(len(st.session_state['generated']) - 1, -1, -1):
+            message(st.session_state["generated"][i], key=str(i))
+            message(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
