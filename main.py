@@ -240,8 +240,6 @@ if user_input:
 
     if 'transcript' not in st.session_state:
         st.session_state.transcript = transcript
-    else:
-        st.session_state.transcript = transcript
 
     if 'messages' not in st.session_state:
         st.session_state['messages'] = [{"role": "user", "content": transcript}]
