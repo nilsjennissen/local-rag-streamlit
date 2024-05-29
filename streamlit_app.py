@@ -178,7 +178,6 @@ def build_prompt(template_num="template_1"):
 
 #%% --------------------------------------------  PAGE CONTENT  ------------------------------------------------------#
 st.set_page_config(page_title="Home", layout="wide")
-st.sidebar.image("rslt_logo_dark_mode.png", width=200)
 st.sidebar.title("")
 st.sidebar.title("Info:")
 st.sidebar.write("""Use the newest AI technology to chat fully local with an open source LLM! Summarize and retrieve content from 
