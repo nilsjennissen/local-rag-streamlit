@@ -5,3 +5,6 @@ numpy~=1.26.0
 matplotlib~=3.8.0
 ipython~=8.16.1
 langchain-community
+PyPDF2
+docx2txt
+streamlit_chat
