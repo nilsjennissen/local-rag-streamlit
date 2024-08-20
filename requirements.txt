@@ -1,6 +1,7 @@
-streamlit~=1.27.2
-langchain~=0.0.319
+streamlit~=1.37.1
+langchain
 pandas~=2.1.1
 numpy~=1.26.0
 matplotlib~=3.8.0
 ipython~=8.16.1
+langchain-community
