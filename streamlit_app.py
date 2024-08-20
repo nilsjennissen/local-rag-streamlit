@@ -11,12 +11,12 @@ import streamlit as st
 from streamlit_chat import message
 
 # LangChain Imports
-from langchain.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Langchain Imports
-from langchain.document_loaders import Docx2txtLoader
-from langchain.document_loaders.csv_loader import CSVLoader
+from langchain_community.document_loaders import Docx2txtLoader
+from langchain_community.document_loaders.csv_loader import CSVLoader
 from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
@@ -26,10 +26,10 @@ from langchain.chains import LLMChain
 from langchain.chains import ConversationalRetrievalChain
 
 # Mistral Imports
-from langchain.llms import Ollama
+from langchain_community.llms import Ollama
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-from langchain.embeddings import OllamaEmbeddings
+from langchain_community.embeddings import OllamaEmbeddings
 
 # Mistral Settings
 embeddings_open = OllamaEmbeddings(model="llama3:latest")
